@@ -31,7 +31,7 @@ echo "local redmine redmine peer" >> /etc/postgresql/9.4/main/pg_hba.conf
 
 adduser --system --shell=/bin/bash --home=/opt/redmine redmine
 
-wget -O - http://www.redmine.org/releases/redmine-${REDMINE_VERSION}.tar.gz | tar -C /opt/ -xvzf -
+wget -O - http://www.redmine.org/releases/redmine-${REDMINE_VERSION}.tar.gz 2>/dev/null | tar -C /opt/ -xvzf -
 rm -fr /opt/redmine
 ln -s /opt/redmine-${REDMINE_VERSION} /opt/redmine
 chown -R redmine:nogroup /opt/redmine-${REDMINE_VERSION}

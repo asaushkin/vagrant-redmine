@@ -9,6 +9,8 @@ curl -sSL https://get.rvm.io | bash
 export PATH="$PATH:$HOME/.rvm/bin"
 source "$HOME/.rvm/scripts/rvm"
 
+cd $HOME
+
 rvm install 2.1
 rvm use 2.1@redmine --create --default
 

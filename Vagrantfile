@@ -9,12 +9,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box_url = "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
   config.vm.network "forwarded_port", guest: 3000, host: 8888
   config.vm.provider "virtualbox" do |vb|
-     # Don't boot with headless mode
-     vb.gui = true
-
      # Use VBoxManage to customize the VM. For example to change memory:
      vb.customize ["modifyvm", :id, "--memory", "2048"]
      vb.customize ["modifyvm", :id, "--cpus", "4"]
   end
-  #config.vm.provision "shell", path: "bootstrap.sh"
+  config.vm.provision "shell", path: "bootstrap.sh"
 end
