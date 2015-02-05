@@ -1,0 +1,6 @@
+production:
+  adapter: postgresql
+  database: redmine
+  host: /var/run/postgresql
+  username: redmine
+  encoding: utf8
