@@ -11,8 +11,8 @@ source "$HOME/.rvm/scripts/rvm"
 
 cd $HOME
 
-rvm install 2.1
-rvm use 2.1@redmine --create --default
+rvm install 2.2
+rvm use 2.2@redmine --create --default
 
 cp $VAGRANT_FILES/database.yml config/
 
@@ -26,6 +26,6 @@ rake redmine:load_default_data
 
 mkdir -p tmp tmp/pdf public/plugin_assets
 
-ruby script/rails server webrick -e production -d
+ruby bin/rails server -b 0.0.0.0 webrick -e production -d
 
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Script to create a vagrant image with redmine ready to use.
 
-export REDMINE_VERSION=2.6.1
+export REDMINE_VERSION=3.0.0
 
 # Set non-interactive instaler mode, update repos.
 export DEBIAN_FRONTEND=noninteractive
