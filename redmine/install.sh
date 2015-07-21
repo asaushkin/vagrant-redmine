@@ -19,6 +19,7 @@ cp $VAGRANT_FILES/database.yml config/
 export RAILS_ENV=production
 export REDMINE_LANG=ru
 
+gem install bundler
 bundle install --without development test
 rake generate_secret_token
 rake db:migrate
