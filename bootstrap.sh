@@ -8,9 +8,13 @@ export PG_VERSION=9.5
 export DEBIAN_FRONTEND=noninteractive
 
 # Install postgresql from pgdg
-apt-get install wget ca-certificates
+apt-get install wget ca-certificates apt-transport-https
+
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
+apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+echo "deb https://apt.dockerproject.org/repo ubuntu-$(lsb_release -cs) main" > /etc/apt/sources.list.d/docker.list
 
 apt-get update
 apt-get purge -y ruby
@@ -26,7 +30,13 @@ apt-get -y install g++ libreadline6-dev zlib1g-dev libssl-dev   \
   postgresql-server-dev-${PG_VERSION} libxslt-dev libxml2-dev imagemagick  \
   libmagickwand-dev apg haveged
 
-su -c 'createuser redmine && createdb redmine -O redmine' postgres
+apt-get -y install linux-image-extra-$(uname -r) apparmor 
+apt-get -y install docker-engine
+
+service docker start
+usermod -aG docker vagrant
+
+docker run --restart=always -d -e RABBITMQ_NODENAME=rabbit-pg --name rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3-management
 
 # configure postgres to accept remote connections
 cat > /etc/postgresql/${PG_VERSION}/main/pg_hba.conf <<EOF
@@ -40,32 +50,20 @@ EOF
 CONF=/etc/postgresql/${PG_VERSION}/main/postgresql.conf
 sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" $CONF
 
+git clone https://github.com/omniti-labs/pg_amqp.git
+cd pg_amqp && make && make install && cd ..
+echo "shared_preload_libraries = 'pg_amqp.so'" >> /etc/postgresql/${PG_VERSION}/main/postgresql.conf
+
 /etc/init.d/postgresql restart
 
 #export PG_PASS=$(/usr/bin/apg -M NCL -n 1 -m 9 -E 0O)
 export PG_PASS=changeme
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD '$PG_PASS';"
 
-adduser --system --shell=/bin/bash --home=/opt/redmine redmine
-echo "redmine ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/redmine
-
-wget -O - http://www.redmine.org/releases/redmine-${REDMINE_VERSION}.tar.gz 2>/dev/null | tar -C /opt/ -xvzf -
-rm -fr /opt/redmine
-ln -s /opt/redmine-${REDMINE_VERSION} /opt/redmine
-chown -R redmine:nogroup /opt/redmine-${REDMINE_VERSION}
-
-### Install redmine
-su -c '/vagrant/redmine/install.sh' redmine
-
 cat <<EOF
 ################################################
-# Now you should be able to see redmine webpage
-# http://localhost:8888
-#
-# Use default Redmine administrator account to log in:
-#
-#   login: admin
-#   password: admin
+# Now you should be able to see rabbitmq webpage
+# http://localhost:15672/ (guest/guest)
 #
 # Use postgresql superuser account:
 #

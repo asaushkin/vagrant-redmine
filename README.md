@@ -1,13 +1,16 @@
 # vagrant-redmine
 
-tag r3.2.1:
------------
-
 Installed software:
   
   Redmine 3.2.1
   Ruby 2.2 (Rails 4.2)
   PostgreSQL 9.5
+  Docker engine
+  RabbitMQ as a docker container
+
+
+tag r3.2.1:
+-----------
 
 In this release postgresql has open port for the host machine.
 You can access to the postgresql with the command:
