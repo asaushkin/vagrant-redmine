@@ -24,11 +24,27 @@ apt-get -y install g++ libreadline6-dev zlib1g-dev libssl-dev   \
   libyaml-dev libsqlite3-dev sqlite3 autoconf libgdbm-dev       \
   libncurses5-dev automake libtool bison pkg-config libffi-dev  \
   postgresql-server-dev-${PG_VERSION} libxslt-dev libxml2-dev imagemagick  \
-  libmagickwand-dev
+  libmagickwand-dev apg haveged
 
 su -c 'createuser redmine && createdb redmine -O redmine' postgres
 
-echo "local redmine redmine peer" >> /etc/postgresql/${PG_VERSION}/main/pg_hba.conf
+# configure postgres to accept remote connections
+cat > /etc/postgresql/${PG_VERSION}/main/pg_hba.conf <<EOF
+local   all             postgres    peer
+local   all             all         peer
+
+# Accept all IPv4 connections - CHANGE THIS!!!
+host    all         all         0.0.0.0/0             md5
+EOF
+
+CONF=/etc/postgresql/${PG_VERSION}/main/postgresql.conf
+sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" $CONF
+
+/etc/init.d/postgresql restart
+
+#export PG_PASS=$(/usr/bin/apg -M NCL -n 1 -m 9 -E 0O)
+export PG_PASS=changeme
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD '$PG_PASS';"
 
 adduser --system --shell=/bin/bash --home=/opt/redmine redmine
 echo "redmine ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/redmine
@@ -46,10 +62,15 @@ cat <<EOF
 # Now you should be able to see redmine webpage
 # http://localhost:8888
 #
-# Use default administrator account to log in:
+# Use default Redmine administrator account to log in:
 #
 #   login: admin
 #   password: admin
+#
+# Use postgresql superuser account:
+#
+#   login: postgres
+#   password: $PG_PASS
 #
 ################################################
 EOF
